@@ -30,63 +30,70 @@
         </div>
     </div>
 
-    <script>
-        let listaUsuarios = JSON.parse(localStorage.getItem("cinema_usuarios")) || [];
-        let modoAuth = "login";
+  <script>
+    let modoAuth = "login";
 
-        if (localStorage.getItem("cinema_sessao")) {
-            window.location.href = "index.html";
+    if (localStorage.getItem("cinema_sessao")) {
+        window.location.href = "index.html";
+    }
+
+    function alternarAba(modo) {
+        modoAuth = modo;
+        const campoNome = document.getElementById("auth-nome");
+        const btnAcao = document.getElementById("btn-auth-acao");
+        const abaLogin = document.getElementById("aba-login");
+        const abaCadastro = document.getElementById("aba-cadastro");
+
+        if (modo === "cadastro") {
+            campoNome.style.display = "block";
+            btnAcao.innerText = "Criar Minha Conta";
+            abaCadastro.classList.add("ativa");
+            abaLogin.classList.remove("ativa");
+        } else {
+            campoNome.style.display = "none";
+            btnAcao.innerText = "Entrar";
+            abaLogin.classList.add("ativa");
+            abaCadastro.classList.remove("ativa");
+        }
+    }
+
+    async function executarAutenticacao() {
+        const nome = document.getElementById("auth-nome").value.trim();
+        const email = document.getElementById("auth-email").value.trim().toLowerCase();
+        const senha = document.getElementById("auth-senha").value;
+
+        if (!email || !senha || (modoAuth === "cadastro" && !nome)) {
+            return alert("Por favor, preencha todos os campos.");
         }
 
-        function alternarAba(modo) {
-            modoAuth = modo;
-            const campoNome = document.getElementById("auth-nome");
-            const btnAcao = document.getElementById("btn-auth-acao");
-            const abaLogin = document.getElementById("aba-login");
-            const abaCadastro = document.getElementById("aba-cadastro");
+        const url = modoAuth === "cadastro" ? '/cadastro' : '/login';
+        const corpo = modoAuth === "cadastro" ? { nome, email, senha } : { email, senha };
 
-            if (modo === "cadastro") {
-                campoNome.style.display = "block";
-                btnAcao.innerText = "Criar Minha Conta";
-                abaCadastro.classList.add("ativa");
-                abaLogin.classList.remove("ativa");
-            } else {
-                campoNome.style.display = "none";
-                btnAcao.innerText = "Entrar";
-                abaLogin.classList.add("ativa");
-                abaCadastro.classList.remove("ativa");
-            }
-        }
+        try {
+            const resposta = await fetch(`http://localhost:3000/api/usuarios${url}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(corpo)
+            });
 
-        function executarAutenticacao() {
-            const nome = document.getElementById("auth-nome").value.trim();
-            const email = document.getElementById("auth-email").value.trim().toLowerCase();
-            const senha = document.getElementById("auth-senha").value;
+            const dados = await resposta.json();
 
-            if (!email || !senha || (modoAuth === "cadastro" && !nome)) {
-                return alert("Por favor, preencha todos os campos.");
+            if (!resposta.ok) {
+                return alert(dados.error || "Erro na autenticação.");
             }
 
             if (modoAuth === "cadastro") {
-                const usuarioExiste = listaUsuarios.find(u => u.email === email);
-                if (usuarioExiste) return alert("Este e-mail já está cadastrado.");
-
-                const novoUsuario = { nome, email, senha };
-                listaUsuarios.push(novoUsuario);
-                localStorage.setItem("cinema_usuarios", JSON.stringify(listaUsuarios));
-                
-                alert("Conta de crítico criada! Faça login para acessar.");
+                alert("Conta criada com sucesso no Postgres do VS Code! Faça login.");
                 alternarAba("login");
             } else {
-                const usuario = listaUsuarios.find(u => u.email === email && u.senha === senha);
-                if (!usuario) return alert("E-mail ou senha incorretos.");
-
-                localStorage.setItem("cinema_sessao", JSON.stringify(usuario));
+                localStorage.setItem("cinema_sessao", JSON.stringify(dados));
                 window.location.href = "index.html";
             }
+        } catch (err) {
+            alert("Erro ao conectar com o servidor local.");
         }
-    </script>
-
+    }
+</script>
     <link rel="stylesheet" href="index.css">
     <link rel="stylesheet" href="login.css">
 </body>

@@ -1,4 +1,4 @@
-let itensGlobais = JSON.parse(localStorage.getItem("cinema_criticas")) || [];
+let itensGlobais = [];
 let usuarioLogado = JSON.parse(localStorage.getItem("cinema_sessao")) || null;
 let filtroAtual = "todos";
 
@@ -6,16 +6,11 @@ const lista = document.getElementById("lista");
 const feedbackInput = document.getElementById("feedback");
 const contador = document.getElementById("contador-caracteres");
 
-function salvarNoLocalStorage() {
-    localStorage.setItem("cinema_criticas", JSON.stringify(itensGlobais));
-}
-
 function verificarSessao() {
     const tagUsuario = document.getElementById("usuario-ativo-tag");
-
     if (usuarioLogado) {
         if (tagUsuario) tagUsuario.innerText = `🍿 Crítico: ${usuarioLogado.nome}`;
-        renderizar();
+        puxarDadosDoPostgres();
     } else {
         window.location.href = "login.html";
     }
@@ -25,6 +20,18 @@ function fazerLogout() {
     localStorage.removeItem("cinema_sessao");
     usuarioLogado = null;
     window.location.href = "login.html";
+}
+
+// Puxa as críticas de qualquer utilizador direto do teu banco local
+async function puxarDadosDoPostgres() {
+    try {
+        const resposta = await fetch('http://localhost:3000/api/criticas');
+        itensGlobais = await resposta.json();
+        atualizarEstatisticas();
+        renderizar();
+    } catch (err) {
+        console.error("Erro ao ler dados do Postgres");
+    }
 }
 
 function tocarSomAnalogico(tipo) {
@@ -116,7 +123,7 @@ function renderizar() {
     }
 }
 
-function adicionarItem() {
+async function adicionarItem() {
     const tituloInput = document.getElementById("titulo");
     const tipoInput = document.getElementById("tipo");
     const notaInput = document.getElementById("nota");
@@ -125,33 +132,39 @@ function adicionarItem() {
     const titulo = tituloInput.value.trim();
     const tipo = tipoInput.value;
     const nota = parseFloat(notaInput.value);
-    const seloEditorial = seloInput.value;
+    const selo_editorial = seloInput.value;
     const feedback = feedbackInput.value.trim();
 
     if (!titulo || isNaN(nota) || !feedback) return alert("Preencha todos os campos!");
     if (nota < 0 || nota > 10) return alert("A nota deve ser de 0 a 10.");
 
-    itensGlobais.unshift({ 
+    const novaCritica = { 
         titulo, 
         tipo, 
         nota, 
-        seloEditorial, 
+        selo_editorial, 
         feedback,
         autor: usuarioLogado ? usuarioLogado.nome : "Anônimo"
-    });
-    
-    salvarNoLocalStorage();
-    tocarSomAnalogico('claquete');
-    
-    tituloInput.value = ""; notaInput.value = ""; feedbackInput.value = "";
-    seloInput.selectedIndex = 0;
-    contador.innerText = "0 / 300";
-    
-    atualizarEstatisticas();
-    renderizar();
+    };
+
+    try {
+        await fetch('http://localhost:3000/api/criticas', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(novaCritica)
+        });
+        
+        tocarSomAnalogico('claquete');
+        tituloInput.value = ""; notaInput.value = ""; feedbackInput.value = "";
+        seloInput.selectedIndex = 0;
+        contador.innerText = "0 / 300";
+        
+        puxarDadosDoPostgres();
+    } catch (err) {
+        alert("Erro ao gravar no banco de dados.");
+    }
 }
 
 document.addEventListener("DOMContentLoaded", () => {
     verificarSessao();
-    atualizarEstatisticas();
 });

@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cahiers du Cinéma - Catálogo</title>
+    <link rel="stylesheet" href="index.css">
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#731a1a">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+</head>
+<body>
+
+    <div class="pelicula-grao"></div>
+
+    <header>
+        <div class="topo-usuario">
+            <span id="usuario-ativo-tag">Crítico: Convidado</span>
+            <button class="btn-logout" onclick="fazerLogout()">Sair 🚪</button>
+        </div>
+        <div class="marca-container">
+            <h1>Le Cinéma</h1>
+            <p class="subtitulo">A Arte da Luz e do Tempo</p>
+        </div>
+    </header>
+
+    <main>
+        <section class="form-section">
+            <input type="text" id="titulo" placeholder="Título da Obra" maxlength="60">
+
+            <select id="tipo">
+                <option value="Filme">🎞️ Filmes</option>
+                <option value="Série">📺 Série</option>
+            </select>
+
+            <div class="nota-container">
+                <input type="number" id="nota" min="0" max="10" step="0.1" placeholder="Nota / 10">
+            </div>
+
+            <div class="selo-container" style="margin-bottom: 1rem; width: 100%;">
+                <label for="selo-editorial" style="display: block; font-size: 0.8rem; margin-bottom: 0.4rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">Classificação Editorial:</label>
+                <select id="selo-editorial" style="width: 100%;">
+                    <option value="🌟 Obra-Prima">🌟 Obra-Prima</option>
+                    <option value="🎬 Muito Bom">🎬 Muito Bom</option>
+                    <option value="🍿 Regular">🍿 Regular</option>
+                    <option value="🧊 Não é bom">🧊 Não é bom</option>
+                </select>
+            </div>
+
+            <div class="textarea-container">
+                <textarea id="feedback" placeholder="Escreva um feedback..." maxlength="300"></textarea>
+                <span id="contador-caracteres">0 / 300</span>
+            </div>
+
+            <button id="btn-adicionar" onclick="adicionarItem()">Enviar avaliação</button>
+        </section>
+
+        <section class="controle-section">
+            <div class="stats-container">
+                <div class="stat-box">Obras catalogadas: <span id="stat-total">0</span></div>
+                <div class="stat-box">Índice Estético: <span id="stat-media">0.0</span></div>
+            </div>
+
+            <div class="filtros-container">
+                <button class="btn-filtro ativo" onclick="filtrarLista('todos', this)">Tudo</button>
+                <button class="btn-filtro" onclick="filtrarLista('Filme', this)">Filmes</button>
+                <button class="btn-filtro" onclick="filtrarLista('Série', this)">Seriados</button>
+                <button class="btn-curador" onclick="filtrarLista('recomendados', this)">Recomendações</button>
+            </div>
+        </section>
+
+        <section>
+            <div id="lista"></div>
+        </section>
+    </main>
+
+    <script src="index.js"></script>
+    <script>
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('sw.js')
+                .then(() => console.log('PWA ativo!'))
+                .catch(err => console.log('Erro no PWA:', err));
+        }
+    </script>
+</body>
+</html>

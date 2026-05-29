@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Le Cinéma - Autenticação</title>
+    <link rel="stylesheet" href="index.css">
+    <link rel="stylesheet" href="login.css">
+</head>
+<body>
+
+    <div class="pelicula-grao"></div>
+
+    <div class="auth-container-fix">
+        <div class="auth-box">
+            <h2>Le Cinéma</h2>
+            <p class="auth-subtitulo">Crítica</p>
+            
+            <div class="auth-abas">
+                <button id="aba-login" class="aba-botao ativa" onclick="alternarAba('login')">Entrar</button>
+                <button id="aba-cadastro" class="aba-botao" onclick="alternarAba('cadastro')">Criar Conta</button>
+            </div>
+
+            <div class="auth-form">
+                <input type="text" id="auth-nome" placeholder="Seu Nome de Crítico" maxlength="40" style="display: none;">
+                <input type="email" id="auth-email" placeholder="E-mail">
+                <input type="password" id="auth-senha" placeholder="Senha">
+                <button id="btn-auth-acao" onclick="executarAutenticacao()">Entrar</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let listaUsuarios = JSON.parse(localStorage.getItem("cinema_usuarios")) || [];
+        let modoAuth = "login";
+
+        if (localStorage.getItem("cinema_sessao")) {
+            window.location.href = "index.html";
+        }
+
+        function alternarAba(modo) {
+            modoAuth = modo;
+            const campoNome = document.getElementById("auth-nome");
+            const btnAcao = document.getElementById("btn-auth-acao");
+            const abaLogin = document.getElementById("aba-login");
+            const abaCadastro = document.getElementById("aba-cadastro");
+
+            if (modo === "cadastro") {
+                campoNome.style.display = "block";
+                btnAcao.innerText = "Criar Minha Conta";
+                abaCadastro.classList.add("ativa");
+                abaLogin.classList.remove("ativa");
+            } else {
+                campoNome.style.display = "none";
+                btnAcao.innerText = "Entrar";
+                abaLogin.classList.add("ativa");
+                abaCadastro.classList.remove("ativa");
+            }
+        }
+
+        function executarAutenticacao() {
+            const nome = document.getElementById("auth-nome").value.trim();
+            const email = document.getElementById("auth-email").value.trim().toLowerCase();
+            const senha = document.getElementById("auth-senha").value;
+
+            if (!email || !senha || (modoAuth === "cadastro" && !nome)) {
+                return alert("Por favor, preencha todos os campos.");
+            }
+
+            if (modoAuth === "cadastro") {
+                const usuarioExiste = listaUsuarios.find(u => u.email === email);
+                if (usuarioExiste) return alert("Este e-mail já está cadastrado.");
+
+                const novoUsuario = { nome, email, senha };
+                listaUsuarios.push(novoUsuario);
+                localStorage.setItem("cinema_usuarios", JSON.stringify(listaUsuarios));
+                
+                alert("Conta de crítico criada! Faça login para acessar.");
+                alternarAba("login");
+            } else {
+                const usuario = listaUsuarios.find(u => u.email === email && u.senha === senha);
+                if (!usuario) return alert("E-mail ou senha incorretos.");
+
+                localStorage.setItem("cinema_sessao", JSON.stringify(usuario));
+                window.location.href = "index.html";
+            }
+        }
+    </script>
+
+    <link rel="stylesheet" href="index.css">
+    <link rel="stylesheet" href="login.css">
+</body>
+</html>

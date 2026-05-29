@@ -1,0 +1,22 @@
+{
+  "name": "Cahiers du Cinéma - Catálogo",
+  "short_name": "Le Cinéma",
+  "description": "A Arte da Luz e do Tempo - Catálogo Editorial de Críticas",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#731a1a",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "https://cdn-icons-png.flaticon.com/512/2503/25033508.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "https://cdn-icons-png.flaticon.com/512/2503/25033508.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
